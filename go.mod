@@ -1,4 +1,4 @@
-module rvault
+module github.com/rrodolfo-vmw/rvault
 
 go 1.14
 
