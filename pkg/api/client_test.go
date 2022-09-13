@@ -3,7 +3,7 @@ package api_test
 import (
 	"testing"
 
-	"rvault/internal/pkg/api"
+	"github.com/rrodolfo-vmw/rvault/pkg/api"
 
 	"github.com/spf13/viper"
 )

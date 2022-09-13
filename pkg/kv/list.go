@@ -7,8 +7,8 @@ import (
 	"strings"
 	"sync"
 
-	"rvault/internal/pkg/api"
-	"rvault/internal/pkg/filter"
+	"github.com/rrodolfo-vmw/rvault/pkg/api"
+	"github.com/rrodolfo-vmw/rvault/pkg/filter"
 
 	"github.com/gobwas/glob"
 	vapi "github.com/hashicorp/vault/api"

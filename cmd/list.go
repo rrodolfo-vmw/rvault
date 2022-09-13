@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
-	"rvault/internal/pkg/api"
-	"rvault/internal/pkg/kv"
+	"rvault/pkg/api"
+	"rvault/pkg/kv"
 
 	"k8s.io/klog/v2"
 

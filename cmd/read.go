@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 
-	"rvault/internal/pkg/api"
-	"rvault/internal/pkg/kv"
-	"rvault/internal/pkg/output"
+	"rvault/pkg/api"
+	"rvault/pkg/kv"
+	"rvault/pkg/output"
 
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"

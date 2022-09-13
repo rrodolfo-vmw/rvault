@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"rvault/internal/pkg/api"
+	"github.com/rrodolfo-vmw/rvault/pkg/api"
 
 	vapi "github.com/hashicorp/vault/api"
 	"k8s.io/klog/v2"

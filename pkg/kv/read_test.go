@@ -4,13 +4,33 @@ import (
 	"reflect"
 	"testing"
 
-	"rvault/internal/pkg/kv"
+	"github.com/rrodolfo-vmw/rvault/pkg/kv"
 
 	vapi "github.com/hashicorp/vault/api"
 	"github.com/spf13/viper"
 )
 
-func TestRList(t *testing.T) {
+var wantSmokeTest map[string]map[string]string
+
+func init() {
+	wantSmokeTest = map[string]map[string]string{
+		"/spain/admin": {
+			"admin.conf": "dsfdsflfrf43l4tlp",
+		},
+		"/spain/malaga/random": {
+			"my.key": "d3ewf2323r21e2",
+		},
+		"/france/paris/key": {
+			"id_rsa": "ewdfpelfr23pwlrp32l4[p23lp2k",
+			"id_dsa": "fewfowefkfkwepfkewkfpweokfeowkfpk",
+		},
+		"/uk/london/mi5": {
+			"mi5.conf": "salt, 324r23432, false",
+		},
+	}
+}
+
+func TestRRead(t *testing.T) {
 	cluster := createTestVault(t)
 	defer cluster.Cleanup()
 	client := cluster.Cores[0].Client
@@ -26,7 +46,7 @@ func TestRList(t *testing.T) {
 		name       string
 		args       args
 		viperFlags map[string]interface{}
-		want       []string
+		want       map[string]map[string]string
 		wantErr    bool
 	}{
 		{
@@ -40,67 +60,26 @@ func TestRList(t *testing.T) {
 			viperFlags: map[string]interface{}{
 				"global.kv_version": "2",
 			},
-			want: []string{
-				"/france/paris/key",
-				"/spain/admin",
-				"/spain/malaga/random",
-				"/uk/london/mi5",
-			},
+			want:    wantSmokeTest,
 			wantErr: false,
 		},
 		{
-			name: "Smoke Test V1",
+			name: "Smoke Test V1 Buffered",
 			args: args{
 				c:            client,
 				engine:       engine,
 				path:         "/",
 				includePaths: []string{"*"},
+				concurrency:  20,
 			},
 			viperFlags: map[string]interface{}{
 				"global.kv_version": "1",
 			},
-			want: []string{
-				"/france/paris/key",
-				"/spain/admin",
-				"/spain/malaga/random",
-				"/uk/london/mi5",
-			},
+			want:    wantSmokeTest,
 			wantErr: false,
 		},
 		{
-			name: "Inclusion and Exclusion Paths",
-			args: args{
-				c:            client,
-				engine:       engine,
-				path:         "/",
-				includePaths: []string{"/spain/*", "/uk/*"},
-				excludePaths: []string{"*/admin"},
-			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "1",
-			},
-			want: []string{
-				"/spain/malaga/random",
-				"/uk/london/mi5",
-			},
-			wantErr: false,
-		},
-		{
-			name: "Secret not found",
-			args: args{
-				c:            client,
-				engine:       engineV2,
-				path:         "/france/fakesecret",
-				includePaths: []string{"*"},
-			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "2",
-			},
-			want:    nil,
-			wantErr: false,
-		},
-		{
-			name: "Unknown KV version",
+			name: "Unknown KV Version",
 			args: args{
 				c:            client,
 				engine:       engine,
@@ -113,22 +92,32 @@ func TestRList(t *testing.T) {
 			want:    nil,
 			wantErr: true,
 		},
+		{
+			name: "Unset KV Version",
+			args: args{
+				c:            client,
+				engine:       engine,
+				path:         "/",
+				includePaths: []string{"*"},
+			},
+			want:    wantSmokeTest,
+			wantErr: false,
+		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			for k, v := range tt.viperFlags {
 				viper.Set(k, v)
 			}
-			got, err := kv.RList(tt.args.c, tt.args.engine, tt.args.path, tt.args.includePaths, tt.args.excludePaths,
+			got, err := kv.RRead(tt.args.c, tt.args.engine, tt.args.path, tt.args.includePaths, tt.args.excludePaths,
 				tt.args.concurrency)
 			viper.Reset()
 			if (err != nil) != tt.wantErr {
-				t.Errorf("RList() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("RRead() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("RList() got = %v, want %v", got, tt.want)
+				t.Errorf("RRead() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
