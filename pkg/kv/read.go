@@ -81,19 +81,22 @@ func parseReadResults(dumpResults []readResult, kvVersion string) (map[string]ma
 
 // RRead reads all secrets for a given path including every subpath. No more than 'concurrency' API queries to Vault
 // will be done.
-func RRead(c *vapi.Client, engine string, path string, includePaths []string, excludePaths []string,
+func RRead(c *vapi.Client, engine string, kvVersion string, path string, includePaths []string, excludePaths []string,
 	concurrency uint32) (map[string]map[string]string, error) {
 	var dumpResults []readResult
-	kvVersion, err := getKVVersion(c, engine)
-	if err != nil {
-		return nil, err
+	var err error
+	if kvVersion == "" {
+		kvVersion, err = getKVVersion(c, engine)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	wg := sync.WaitGroup{}
 	resChan := make(chan *readResult)
 	exitChan := make(chan struct{})
 	throttleChan := make(chan struct{}, concurrency)
-	secretPaths, err := RList(c, engine, path, includePaths, excludePaths, concurrency)
+	secretPaths, err := RList(c, engine, kvVersion, path, includePaths, excludePaths, concurrency)
 	klog.V(4).Infof("Listing returned %d secret paths", len(secretPaths))
 	if err != nil {
 		return nil, err

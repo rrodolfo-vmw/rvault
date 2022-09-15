@@ -57,7 +57,7 @@ var readCmd = &cobra.Command{
 		if err != nil {
 			klog.Fatalf("%v", err)
 		}
-		readSecrets, err = kv.RRead(c, engine, path, includePaths, excludePaths, concurrency)
+		readSecrets, err = kv.RRead(c, engine, "", path, includePaths, excludePaths, concurrency)
 		if err != nil {
 			if readSecrets == nil {
 				klog.Fatalf("%v", err)

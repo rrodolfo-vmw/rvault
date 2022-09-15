@@ -66,13 +66,17 @@ func lookup(c *vapi.Client, engine string, searchPath string, includeGlobPattern
 
 // RList lists all secrets for a given 'path' including every subpath as long as they match one of the 'includePaths'.
 // No more than 'concurrency' API queries to Vault will be done.
-func RList(c *vapi.Client, engine string, path string, includePaths []string, excludePaths []string,
+func RList(c *vapi.Client, engine string, kvVersion string, path string, includePaths []string, excludePaths []string,
 	concurrency uint32) ([]string, error) {
 	var secretPaths []string
 	var errors []error
-	kvVersion, err := getKVVersion(c, engine)
-	if err != nil {
-		return nil, err
+
+	var err error
+	if kvVersion == "" {
+		kvVersion, err = getKVVersion(c, engine)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	wg := sync.WaitGroup{}

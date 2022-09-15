@@ -17,28 +17,26 @@ func TestRList(t *testing.T) {
 	type args struct {
 		c            *vapi.Client
 		engine       string
+		kvVersion    string
 		path         string
 		concurrency  uint32
 		includePaths []string
 		excludePaths []string
 	}
 	tests := []struct {
-		name       string
-		args       args
-		viperFlags map[string]interface{}
-		want       []string
-		wantErr    bool
+		name    string
+		args    args
+		want    []string
+		wantErr bool
 	}{
 		{
 			name: "Smoke Test V2",
 			args: args{
 				c:            client,
 				engine:       engineV2,
+				kvVersion:    "2",
 				path:         "/",
 				includePaths: []string{"*"},
-			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "2",
 			},
 			want: []string{
 				"/france/paris/key",
@@ -53,11 +51,9 @@ func TestRList(t *testing.T) {
 			args: args{
 				c:            client,
 				engine:       engine,
+				kvVersion:    "1",
 				path:         "/",
 				includePaths: []string{"*"},
-			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "1",
 			},
 			want: []string{
 				"/france/paris/key",
@@ -72,12 +68,10 @@ func TestRList(t *testing.T) {
 			args: args{
 				c:            client,
 				engine:       engine,
+				kvVersion:    "1",
 				path:         "/",
 				includePaths: []string{"/spain/*", "/uk/*"},
 				excludePaths: []string{"*/admin"},
-			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "1",
 			},
 			want: []string{
 				"/spain/malaga/random",
@@ -90,11 +84,9 @@ func TestRList(t *testing.T) {
 			args: args{
 				c:            client,
 				engine:       engineV2,
+				kvVersion:    "2",
 				path:         "/france/fakesecret",
 				includePaths: []string{"*"},
-			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "2",
 			},
 			want:    nil,
 			wantErr: false,
@@ -104,11 +96,9 @@ func TestRList(t *testing.T) {
 			args: args{
 				c:            client,
 				engine:       engine,
+				kvVersion:    "99",
 				path:         "/",
 				includePaths: []string{"*"},
-			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "99",
 			},
 			want:    nil,
 			wantErr: true,
@@ -117,10 +107,7 @@ func TestRList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			for k, v := range tt.viperFlags {
-				viper.Set(k, v)
-			}
-			got, err := kv.RList(tt.args.c, tt.args.engine, tt.args.path, tt.args.includePaths, tt.args.excludePaths,
+			got, err := kv.RList(tt.args.c, tt.args.engine, tt.args.kvVersion, tt.args.path, tt.args.includePaths, tt.args.excludePaths,
 				tt.args.concurrency)
 			viper.Reset()
 			if (err != nil) != tt.wantErr {

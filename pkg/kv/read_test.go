@@ -37,6 +37,7 @@ func TestRRead(t *testing.T) {
 	type args struct {
 		c            *vapi.Client
 		engine       string
+		kvVersion    string
 		path         string
 		concurrency  uint32
 		includePaths []string
@@ -54,11 +55,9 @@ func TestRRead(t *testing.T) {
 			args: args{
 				c:            client,
 				engine:       engineV2,
+				kvVersion:    "2",
 				path:         "/",
 				includePaths: []string{"*"},
-			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "2",
 			},
 			want:    wantSmokeTest,
 			wantErr: false,
@@ -68,35 +67,20 @@ func TestRRead(t *testing.T) {
 			args: args{
 				c:            client,
 				engine:       engine,
+				kvVersion:    "1",
 				path:         "/",
 				includePaths: []string{"*"},
 				concurrency:  20,
 			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "1",
-			},
 			want:    wantSmokeTest,
 			wantErr: false,
-		},
-		{
-			name: "Unknown KV Version",
-			args: args{
-				c:            client,
-				engine:       engine,
-				path:         "/",
-				includePaths: []string{"*"},
-			},
-			viperFlags: map[string]interface{}{
-				"global.kv_version": "99",
-			},
-			want:    nil,
-			wantErr: true,
 		},
 		{
 			name: "Unset KV Version",
 			args: args{
 				c:            client,
 				engine:       engine,
+				kvVersion:    "",
 				path:         "/",
 				includePaths: []string{"*"},
 			},
@@ -109,7 +93,7 @@ func TestRRead(t *testing.T) {
 			for k, v := range tt.viperFlags {
 				viper.Set(k, v)
 			}
-			got, err := kv.RRead(tt.args.c, tt.args.engine, tt.args.path, tt.args.includePaths, tt.args.excludePaths,
+			got, err := kv.RRead(tt.args.c, tt.args.engine, "", tt.args.path, tt.args.includePaths, tt.args.excludePaths,
 				tt.args.concurrency)
 			viper.Reset()
 			if (err != nil) != tt.wantErr {
